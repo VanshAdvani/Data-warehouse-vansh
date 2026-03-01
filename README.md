@@ -1,5 +1,9 @@
 # Data-warehouse-vansh
 This is for the data engineering course Tutorial1 2025-26
 
-Add the data warehouse image from Draw.io
-Add the naming convention
+data warehouse image from Draw.io (copy the url to your browser) :
+
+https://viewer.diagrams.net/?tags=%7B%7D&lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=Data%20planning%20and%20stages.drawio.html&dark=auto#R%3Cmxfile%3E%3Cdiagram%20name%3D%22Page-1%22%20id%3D%22s8JuRSvbDgmfWP8AYVc8%22%3E1ZpRb9owEMc%2FDY%2BVSFIofYWWtlKnVaXTpr2Z5HC8JTaynQL99LMTQwLZpJbtTtoLJH%2FHTvjlzr5%2FyCCZlds7zdb5J5VBMYiH2XaQ3Azi%2BGoydp9e2DXCOIkbgWuRNVLUCgvxBkEcBrUSGZijA61ShRXrYzFVUkJqjzSmtdocH7ZSxfFZ14xDT1ikrOirX0Vm80adxFetfg%2BC5%2FszR%2BPrpqVk%2B4PDLzE5y9SmIyW3g2SmlbLNVrmdQeHZ7bk0%2FeZ%2FaD1cmAZp39Ph%2BWGa3j%2FOlPr57X74Zax1NP9%2B8ZtRgmTsbs9Aq0pm4IcZDpLpJhcWFmuW%2BtaNu%2BlOy21ZuL3IbTa9X1lRhd4PkoOxQsnQAtrCtnOqcLV3oEqweucOyTtAk0Bv08KPRkELo8TDsB9C7DrssnDr%2BWHklo7bCIA%2BACvGh%2FWimTQrpV30IBJLJkTEEnxis0oz63ojoRqNiVBd4qO6gZWQ4uzAGr0nFY9gRZdYtEYEtJhlfh5vVjQSXpdo0TXG5%2FV5%2BcMtwOIViGAdSoR%2FDusKH9aiqmn5ama3JiM2wSI2wSf2qFjm0xFsrs6b7T8OLBlhAbsmm7%2Fs31cUZ0xkMRa4fdIjF2EpsKUohPUomPSBl8Gy4lxIjoeQan6LCKr%2BJw1%2B%2BNpy6RoiK3ZGGCx6pyUtIj0CG%2FCk1avzvT7sQhYr97H0gjO6pip9wRvIOtBKW8TAPC2BEdES%2BIVntmmxrrQqPd3ckzWq0iniWkxVG0cEVmJWAJOHudFY9810Jt7quGzg0uQ5IkYCjzGtjJBgTJ3GLNshwzvNZER4BIbjhS0LQFtQessxWvEcEfgNXFa9xRePFYHTwGXVW03xWBGYjKfKX8d8ymyaU2Uinivbu5b%2FndhpPiISo7ASBMROsxKRGIF9CNZfSAtcB9%2FvrnYYdMa5Bt7RO2VIobhID4WdrghnQryHBjGBrwhsU18Y12asA7ytj%2Fs3Q%2FpHM8WhhWZCQERNYD6YucB7kHC62iCiIjAYC8v8M4JFmkNJZivw%2FsaICWwFanT1EhEPFYGroE3EM1C53fYFi7qt85ZKcvsL%3C%2Fdiagram%3E%3C%2Fmxfile%3E
+
+
+Naming convention : All the elements of the data warehouse, schema's, for example : Dimensions, Facts, Column Names etc. will be named in snake case naming convention, for instance : dimension of a customer will be - dim_customer.
