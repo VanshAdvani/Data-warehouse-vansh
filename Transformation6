@@ -1,0 +1,56 @@
+## The code loads the product category data from erp source, into transformation schema from ingestion since it is already cleaned
+
+import psycopg
+import pandas as pd
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
+
+HOST = "localhost"
+PORT = 2005
+DB_NAME = "DWH"
+USER = "postgres"
+PASSWORD = "Shahin@19"
+
+
+conn = psycopg.connect(
+    host=HOST,
+    port=PORT,
+    dbname=DB_NAME,
+    user=USER,
+    password=PASSWORD
+)
+
+cursor = conn.cursor()
+cursor.execute("SELECT * FROM ingestion.erp_px_cat_g1v2;")
+
+rows = cursor.fetchall()
+cols = [desc[0] for desc in cursor.description]
+
+df = pd.DataFrame(rows, columns=cols)
+
+print(df)
+
+cursor.close()
+conn.close()
+
+
+url = URL.create(
+    drivername="postgresql+psycopg",
+    username=USER,
+    password=PASSWORD,
+    host=HOST,
+    port=PORT,
+    database=DB_NAME
+)
+
+engine = create_engine(url)
+
+df.to_sql(
+    name="erp_px_cat_g1v2_clean",
+    con=engine,
+    schema="transformation",
+    if_exists="replace",
+    index=False
+)
+
+print("✅ Table successfully copied to transformation.erp_px_cat_g1v2_clean")
