@@ -1,0 +1,93 @@
+## The file contains cleaning of location data from erp source
+
+import psycopg
+import pandas as pd
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
+
+HOST = "localhost"
+PORT = 2005
+DB_NAME = "DWH"
+USER = "postgres"
+PASSWORD = "Shahin@19"
+
+
+conn = psycopg.connect(
+    host=HOST,
+    port=PORT,
+    dbname=DB_NAME,
+    user=USER,
+    password=PASSWORD
+)
+
+cursor = conn.cursor()
+cursor.execute("SELECT * FROM ingestion.erp_loc_a101;")
+
+rows = cursor.fetchall()
+cols = [desc[0] for desc in cursor.description]
+
+df = pd.DataFrame(rows, columns=cols)
+
+
+df["cid"] = df["cid"].astype("string").str.strip()
+df["cid"] = df["cid"].str.replace("-", "", regex=False)
+
+
+df["cntry"] = df["cntry"].astype("string").str.strip()
+
+df["cntry"] = df["cntry"].replace({
+    "": "NA",
+    "NULL": "NA",
+    "Null": "NA",
+    "null": "NA",
+    "None": "NA",
+    "none": "NA",
+    "NA": "NA",
+    "N/A": "NA",
+    "n/a": "NA",
+    "DE": "Germany",
+    "de": "Germany",
+    "US": "United States",
+    "us": "United States",
+    "USA": "United States",
+    "usa": "United States"
+})
+
+df["cntry"] = df["cntry"].fillna("NA")
+
+
+df["cntry"] = df["cntry"].replace({
+    "germany": "Germany",
+    "united states": "United States",
+    "australia": "Australia",
+    "canada": "Canada",
+    "france": "France",
+    "united kingdom": "United Kingdom"
+})
+
+print(df)
+
+cursor.close()
+conn.close()
+
+
+url = URL.create(
+    drivername="postgresql+psycopg",
+    username=USER,
+    password=PASSWORD,
+    host=HOST,
+    port=PORT,
+    database=DB_NAME
+)
+
+engine = create_engine(url)
+
+df.to_sql(
+    name="erp_loc_a101_clean",
+    con=engine,
+    schema="transformation",
+    if_exists="replace",
+    index=False
+)
+
+print("✅ Clean dataframe loaded into transformation.erp_loc_a101_clean")
