@@ -1,0 +1,133 @@
+## The code is to transform the sales data which had quite some anomalies for dates, price, quantity and sales amount
+
+
+import psycopg
+import pandas as pd
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
+
+HOST = "localhost"
+PORT = 2005
+DB_NAME = "DWH"
+USER = "postgres"
+PASSWORD = "Shahin@19"
+
+conn = psycopg.connect(
+    host=HOST,
+    port=PORT,
+    dbname=DB_NAME,
+    user=USER,
+    password=PASSWORD
+)
+
+cursor = conn.cursor()
+cursor.execute("SELECT * FROM ingestion.crm_sales_details;")
+
+rows = cursor.fetchall()
+cols = [desc[0] for desc in cursor.description]
+
+df = pd.DataFrame(rows, columns=cols)
+
+print("Raw preview:")
+print(df.head())
+print("\nShape:", df.shape)
+
+
+raw_date_cols = ["sls_order_dt", "sls_ship_dt", "sls_due_dt"]
+
+for col in raw_date_cols:
+    df[col] = pd.to_numeric(df[col], errors="coerce")
+
+
+bad_price = df["sls_price"].isnull() | (df["sls_price"] <= 0)
+
+df.loc[bad_price, "sls_price"] = (
+    df.loc[bad_price, "sls_sales"] / df.loc[bad_price, "sls_quantity"]
+)
+
+
+
+df["sls_sales"] = df["sls_quantity"] * df["sls_price"]
+
+order_counts = df.groupby("sls_ord_num")["sls_ord_num"].transform("count")
+
+valid_order_dt = (
+    df["sls_order_dt"].notnull() &
+    (df["sls_order_dt"] != 0) &
+    (df["sls_order_dt"].astype("Int64").astype(str).str.len() == 8)
+)
+
+df["valid_order_dt"] = df["sls_order_dt"].where(valid_order_dt)
+
+min_valid_order_dt = df.groupby("sls_ord_num")["valid_order_dt"].transform("min")
+
+df.loc[order_counts > 1, "sls_order_dt"] = min_valid_order_dt[order_counts > 1]
+
+
+invalid_order_dt = (
+    df["sls_order_dt"].isnull() |
+    (df["sls_order_dt"] == 0) |
+    (df["sls_order_dt"].astype("Int64").astype(str).str.len() != 8)
+)
+
+single_bad_order_dt = (order_counts == 1) & invalid_order_dt
+
+df.loc[single_bad_order_dt, "sls_order_dt"] = df.loc[single_bad_order_dt, "sls_ship_dt"]
+
+
+df["sls_order_dt"] = df["sls_order_dt"].fillna(df["sls_ship_dt"])
+
+
+date_cols = ["sls_order_dt", "sls_ship_dt", "sls_due_dt"]
+
+for col in date_cols:
+    df[col] = pd.to_datetime(
+        df[col].astype("Int64").astype(str),
+        format="%Y%m%d",
+        errors="coerce"
+    )
+
+
+df["sls_price"] = df["sls_price"].round(2)
+df["sls_sales"] = df["sls_sales"].round(2)
+
+
+df = df.drop(columns=["valid_order_dt"])
+
+print("\nTransformed preview:")
+print(df.head(10))
+
+print("\nNull values after transformation:")
+print(df[[
+    "sls_sales",
+    "sls_quantity",
+    "sls_price",
+    "sls_order_dt",
+    "sls_ship_dt",
+    "sls_due_dt"
+]].isnull().sum())
+
+cursor.close()
+conn.close()
+
+
+url = URL.create(
+    drivername="postgresql+psycopg",
+    username=USER,
+    password=PASSWORD,
+    host=HOST,
+    port=PORT,
+    database=DB_NAME
+)
+
+engine = create_engine(url)
+
+df.to_sql(
+    name="crm_sales_details_clean",
+    con=engine,
+    schema="transformation",
+    if_exists="replace",
+    index=False
+)
+
+print("✅ Clean dataframe loaded into transformation.sales_details_clean")
