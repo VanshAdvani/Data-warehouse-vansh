@@ -1,0 +1,146 @@
+## The code automates the entire pipeline of loading, transforming and curating
+
+import importlib
+import time
+from datetime import datetime
+import schedule
+
+
+
+# Helper
+def run_module(module_name, label):
+    print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running {label}...")
+
+    module = importlib.import_module(module_name)
+    importlib.reload(module)
+
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Finished {label} ✅")
+
+
+
+# Setup jobs
+
+def run_database():
+    run_module("database", "database setup")
+
+
+def run_schema():
+    run_module("schema", "schema setup")
+
+
+def run_tables():
+    module_name = "tables"
+    print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running ingestion table creation...")
+    module = importlib.import_module(module_name)
+    importlib.reload(module)
+    if hasattr(module, "main"):
+        module.main()
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Finished ingestion table creation ✅")
+
+
+def run_loading():
+    module_name = "loading"
+    print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running raw data loading...")
+    module = importlib.import_module(module_name)
+    importlib.reload(module)
+    if hasattr(module, "main"):
+        module.main()
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Finished raw data loading ✅")
+
+
+
+# Transformation jobs
+
+def run_transformation1():
+    run_module("transformation1", "transformation1 - crm_cust_info")
+
+
+def run_transformation2():
+    run_module("transformation2", "transformation2 - crm_prd_info")
+
+
+def run_transformation3():
+    run_module("transformation3", "transformation3 - crm_sales_details")
+
+
+def run_transformation4():
+    run_module("transformation4", "transformation4 - erp_cust_az12")
+
+
+def run_transformation5():
+    run_module("transformation5", "transformation5 - erp_loc_a101")
+
+
+def run_transformation6():
+    run_module("transformation6", "transformation6 - erp_px_cat_g1v2")
+
+
+
+# Curated jobs
+
+def run_curate1():
+    run_module("curate1", "curate1 - dim_customers")
+
+
+def run_curate2():
+    run_module("curate2", "curate2 - dim_products")
+
+
+def run_curate3():
+    run_module("curate3", "curate3 - fact_sales")
+
+
+
+# Full pipeline
+
+def run_full_pipeline():
+    print("\n========================================")
+    print(f"PIPELINE STARTED AT {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("========================================")
+
+    run_database()
+    run_schema()
+    run_tables()
+    run_loading()
+
+    run_transformation1()
+    run_transformation2()
+    run_transformation3()
+    run_transformation4()
+    run_transformation5()
+    run_transformation6()
+
+    run_curate1()
+    run_curate2()
+    run_curate3()
+
+    print("\n========================================")
+    print(f"PIPELINE FINISHED AT {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("========================================\n")
+
+
+
+if __name__ == "__main__":
+    # Run once immediately
+    run_full_pipeline()
+
+    # Schedule recurring runs
+    # Adjust these frequencies if needed
+    schedule.every().day.at("01:00").do(run_loading)
+
+    schedule.every().day.at("01:10").do(run_transformation1)
+    schedule.every().day.at("01:12").do(run_transformation2)
+    schedule.every().day.at("01:14").do(run_transformation3)
+    schedule.every().day.at("01:16").do(run_transformation4)
+    schedule.every().day.at("01:18").do(run_transformation5)
+    schedule.every().day.at("01:20").do(run_transformation6)
+
+    schedule.every().day.at("01:30").do(run_curate1)
+    schedule.every().day.at("01:32").do(run_curate2)
+    schedule.every().day.at("01:34").do(run_curate3)
+
+    print("Scheduler started...")
+
+    while True:
+        schedule.run_pending()
+        time.sleep(5)
