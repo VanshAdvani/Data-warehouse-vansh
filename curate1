@@ -1,4 +1,4 @@
-## This is to create the customer dimension for the star schema, it joins the customer table, makes a surrogate key and removes all the unnecessary columns
+## This is to create the customer dimension for the star schema, it joins the customer tables from both sources, makes a surrogate key and removes all the unnecessary columns
 
 import psycopg
 import pandas as pd
